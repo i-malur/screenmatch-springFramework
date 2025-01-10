@@ -1,94 +1,104 @@
 package br.com.alura.screenMatch.principal;
 
-import br.com.alura.screenMatch.model.DadosEpisodio;
-import br.com.alura.screenMatch.model.DadosSerie;
-import br.com.alura.screenMatch.model.DadosTemporada;
-import br.com.alura.screenMatch.model.Episodio;
+import br.com.alura.screenMatch.model.*;
 import br.com.alura.screenMatch.service.ConsumoApi;
 import br.com.alura.screenMatch.service.ConverteDados;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Principal {
 
     private Scanner leitura = new Scanner(System.in);
-
-    private ConsumoApi consumoApi = new ConsumoApi();
+    private ConsumoApi consumo = new ConsumoApi();
     private ConverteDados conversor = new ConverteDados();
-
     private final String ENDERECO = "https://www.omdbapi.com/?t=";
     private final String API_KEY = "&apikey=c466db43";
+    private List<DadosSerie> dadosSeries = new ArrayList<>();
+
 
     public void exibeMenu(){
-        System.out.println("Digite o nome da série para busca: ");
-        var nomeSerie = leitura.nextLine();
-        var json = consumoApi.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
-        DadosSerie dados = conversor.obterDados(json, DadosSerie.class);
-        System.out.println(dados);
+        var opcao = - 1;
+        while(opcao!= 0) {
+            var menu = """
+                    1 - Buscar séries
+                    2 - Buscar episódios
+                    3 - Listar séries buscadas
+                                    
+                    0 - Sair                                 
+                    """;
 
 
-		List<DadosTemporada> temporadas = new ArrayList<>();
-		for(int i = 1; i <= dados.totalTemporadas(); i++){
-			json = consumoApi.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + "&season=" + i + API_KEY);
-			DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
-			temporadas.add(dadosTemporada);
-		}
+            System.out.println(menu);
 
-        temporadas.forEach(System.out::println);
-
-        for(int i=0;i<dados.totalTemporadas();i++){
-            List<DadosEpisodio> episodiosTemporadas = temporadas.get(i).episodios();
-            for(int j=0;j<episodiosTemporadas.size();j++){
-                System.out.println(episodiosTemporadas.get(j).titulo());
+            try {
+                opcao = leitura.nextInt();
+                leitura.nextLine(); // Limpa o buffer
+            } catch (InputMismatchException e) {
+                System.out.println("Por favor, insira um número válido.");
+                leitura.nextLine(); // Limpa a entrada inválida
+                continue; // Volta para o início do loop
             }
 
+            switch (opcao) {
+                case 1:
+                    buscarSerieWeb();
+                    break;
+                case 2:
+                    buscarEpisodioPorSerie();
+                    break;
+                case 3:
+                    listarSeriesBuscadas();
+                    break;
+                case 0:
+                    System.out.println("Saindo...");
+                    break;
+                default:
+                    System.out.println("Opção inválida");
+            }
         }
-
-        temporadas.forEach(t -> t.episodios().forEach(e -> System.out.println(e.titulo())));
-
-        List<DadosEpisodio> dadosEpisodios = temporadas.stream()
-                .flatMap(t -> t.episodios().stream())
-                .collect(Collectors.toList());
-
-        System.out.println("Top 5 episódios! ");
-        dadosEpisodios.stream()
-                .filter(e -> !e.avaliacaoEp().equalsIgnoreCase("N/A"))
-                .sorted(Comparator.comparing(DadosEpisodio::avaliacaoEp).reversed())
-                .limit(5)
-                .forEach(System.out::println);
-
-        List<Episodio> episodios = temporadas.stream()
-                .flatMap(t -> t.episodios().stream()
-                        .map(d -> new Episodio(t.numeroTemp(), d))
-                ).collect(Collectors.toList());
-
-
-        episodios.forEach(System.out::println);
-
-        System.out.println("A partir de qual ano você deseja ver os episódios? ");
-        var ano = leitura.nextInt();
-        leitura.nextLine();
-
-        LocalDate dataBusca = LocalDate.of(ano, 1, 1);
-
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        episodios.stream()
-                .filter(e-> e.getDataLancamento() != null && e.getDataLancamento().isAfter(dataBusca))
-                .forEach(e -> System.out.println(
-                        "Temporada: " + e.getTemporada()+
-                                " Episódio: " + e.getTitulo() +
-                                " Data de lançamento " + e.getDataLancamento().format(formatador)
-                ));
-
     }
-}
 
+    private void buscarSerieWeb() {
+        DadosSerie dados = getDadosSerie();
+        dadosSeries.add(dados);
+        System.out.println(dados);
+    }
+
+    private DadosSerie getDadosSerie() {
+        System.out.println("Digite o nome da série para busca");
+        var nomeSerie = leitura.nextLine();
+        var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
+        DadosSerie dados = conversor.obterDados(json, DadosSerie.class);
+        return dados;
+    }
+
+    private void buscarEpisodioPorSerie(){
+        DadosSerie dadosSerie = getDadosSerie();
+        List<DadosTemporada> temporadas = new ArrayList<>();
+
+        for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
+            var json = consumo.obterDados(ENDERECO + dadosSerie.titulo().replace(" ", "+") + "&season=" + i + API_KEY);
+            DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
+            temporadas.add(dadosTemporada);
+        }
+        temporadas.forEach(System.out::println);
+    }
+
+    private void listarSeriesBuscadas(){
+        List<Serie> series = new ArrayList<>();
+        series = dadosSeries.stream()
+                .map(ds -> new Serie(ds))
+                        .collect(Collectors.toList());
+        dadosSeries.forEach(System.out::println);
+        series.stream()
+                .sorted(Comparator.comparing(Serie::getGenero))
+                .forEach(System.out::println);
+    }
+
+}
 
 
 

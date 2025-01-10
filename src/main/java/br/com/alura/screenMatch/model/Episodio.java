@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
 public class Episodio {
-    private String titulo;
     private Integer temporada;
+    private String titulo;
     private Integer numeroEp;
     private Double avaliacaoEp;
     private LocalDate dataLancamento;
@@ -14,8 +14,8 @@ public class Episodio {
     private String generoEp;
 
     public Episodio(Integer numeroTemporada, DadosEpisodio dadosEpisodio) {
-        this.temporada = numeroTemporada;
         this.numeroEp = dadosEpisodio.numeroEp();
+        this.temporada = numeroTemporada;
         this.titulo = dadosEpisodio.titulo();
         try{
             this.avaliacaoEp = Double.valueOf(dadosEpisodio.avaliacaoEp());
@@ -33,20 +33,20 @@ public class Episodio {
 
     }
 
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
     public Integer getTemporada() {
         return temporada;
     }
 
     public void setTemporada(Integer temporada) {
         this.temporada = temporada;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
     public Integer getNumeroEp() {
@@ -100,13 +100,13 @@ public class Episodio {
     @Override
     public String toString() {
         return
-                "titulo='" + titulo + '\'' +
-                ", temporada=" + temporada +
-                ", numeroEp=" + numeroEp +
-                ", avaliacaoEp=" + avaliacaoEp +
-                ", dataLancamento=" + dataLancamento +
-                ", duracaoEP='" + duracaoEP + '\'' +
-                ", diretorEp='" + diretorEp + '\'' +
-                ", generoEp='" + generoEp + '\'';
+                "temporada = " + temporada +
+                        ", título = " + titulo +
+                        ", numeroEp = " + numeroEp +
+                        ", avaliacaoEp = " + avaliacaoEp +
+                        ", dataLancamento = " + dataLancamento +
+                        ", duracaoEP ='" + duracaoEP + '\'' +
+                        ", diretorEp ='" + diretorEp + '\'' +
+                        ", generoEp= '" + generoEp + '\'';
     }
 }
