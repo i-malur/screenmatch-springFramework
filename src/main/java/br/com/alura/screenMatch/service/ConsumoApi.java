@@ -12,17 +12,14 @@ public class ConsumoApi {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endereco))
                 .build();
-        HttpResponse<String> response = null;
         try {
-            response = client
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro de E/S ao tentar acessar a API: " + e.getMessage(), e);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("A requisição foi interrompida: " + e.getMessage(), e);
         }
-
-        String json = response.body();
-        return json;
     }
 }
