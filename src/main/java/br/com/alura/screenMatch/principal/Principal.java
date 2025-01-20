@@ -143,17 +143,17 @@ public class Principal {
                 temporadas.add(dadosTemporada);
             }
             temporadas.forEach(System.out::println);
+
             List<Episodio> episodios = temporadas.stream()
-                    .flatMap(d -> d.episodios().stream()
-                            .map(e -> new Episodio(d.numeroTemp(), e)))
-                    .collect(Collectors.toList());
+                            .flatMap(d -> d.episodios().stream()
+                                    .map(e -> new Episodio(d.numeroTemp(), e)))
+                            .collect(Collectors.toList());
             serieEncontrada.setEpisodios(episodios);
             repositorio.save(serieEncontrada);
 
         } else{
-                System.out.println("Série não encontrada");
-            }
-
+            System.out.println("Série não encontrada");
+        }
     }
 
     private void listarSeriesBuscadas(){
